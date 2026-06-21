@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Command Centre">
+<title>Command Centre</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:#06030e;color:#f0d0ff;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#c44dff44;border-radius:4px}
+input,textarea,select{font-family:inherit;outline:none;-webkit-appearance:none}
+button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none}
+
+/* Layout */
+.app{min-height:100vh;background:#06030e;background-image:radial-gradient(ellipse at 10% 0%,#1e0835 0%,transparent 55%);padding-bottom:80px}
+.header{padding:20px 16px 0;text-align:center}
+.eyebrow{font-size:9px;letter-spacing:5px;color:#c44dff44;text-transform:uppercase;margin-bottom:4px}
+.logo{font-family:Georgia,serif;font-weight:700;font-size:26px;margin:0 0 4px;letter-spacing:-1px;background:linear-gradient(135deg,#ff9de2,#c44dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.badge{font-size:9px;padding:2px 8px;border-radius:8px}
+.badge-purple{background:#c44dff15;color:#c44dff}
+.badge-red{background:#ff444410;color:#ff4444}
+.badge-green{background:#44ff8810;color:#44ff88}
+
+/* Nav */
+.nav{display:flex;margin:10px 16px 12px;background:#0d0816;border-radius:12px;padding:3px}
+.nav-btn{flex:1;padding:7px 2px;border:none;border-radius:10px;font-size:10px;transition:all .2s;background:transparent;color:#444}
+.nav-btn.active{background:linear-gradient(135deg,#2a0a4a,#1a0530);color:#ff9de2}
+
+/* Content */
+.content{padding:0 16px}
+
+/* Cards */
+.card{padding:14px 16px;border-radius:14px;margin-bottom:12px;background:linear-gradient(135deg,#1a0d2e,#0f0818);border:1px solid #c44dff22}
+.card-title{font-size:9px;letter-spacing:3px;color:#c44dff66;text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+
+/* Finance grid */
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.fin-cell{padding:8px 10px;border-radius:10px;background:#ffffff05;border:1px solid #ffffff08}
+.fin-cell.debt{border-color:#ff444422}
+.fin-label{font-size:9px;color:#444;margin-bottom:2px}
+.fin-val{font-size:15px;color:#ff9de2;font-family:Georgia,serif}
+.fin-val.debt{color:#ff6666}
+
+/* Progress bar */
+.prog-wrap{margin-bottom:8px}
+.prog-header{display:flex;justify-content:space-between;font-size:9px;color:#444;margin-bottom:2px}
+.prog-pct{color:#c44dff}
+.prog-track{height:4px;background:#1a0d2e;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#c44dff,#ff6b9d);border-radius:4px;transition:width .6s ease}
+
+/* Finance edit inputs */
+.fin-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fin-edit-item label{font-size:9px;color:#555;display:block;margin-bottom:3px}
+.fin-edit-item input{width:100%;background:#1a0d2e;border:1px solid #c44dff33;border-radius:6px;padding:5px 8px;color:#ff9de2;font-size:13px}
+
+/* Audit */
+.audit-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.audit-count{font-family:Georgia,serif;font-size:22px;color:#ff9de2}
+.audit-btns{display:flex;gap:6px}
+.audit-btn{width:32px;height:32px;border-radius:50%;border:none;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.audit-btn.minus{background:#ff444420;color:#ff4444}
+.audit-btn.plus{background:#c44dff20;color:#c44dff}
+
+/* Milestone grid */
+.milestone-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}
+.milestone-dot{height:24px;border-radius:6px;border:1px solid #c44dff22;background:#1a0d2e;display:flex;align-items:center;justify-content:center;font-size:9px;color:#333;cursor:pointer;transition:all .2s}
+.milestone-dot.done{background:linear-gradient(135deg,#ff6b9d,#c44dff);border-color:transparent;color:#fff}
+
+/* Schedule */
+.sched-item{padding:12px 14px;border-radius:12px;margin-bottom:8px;background:#0a0610;border:1px solid #ffffff08}
+.sched-item.first{background:linear-gradient(135deg,#1a0535,#0d0220);border-color:#ff6b9d33}
+.sched-day{font-size:11px;color:#555;margin-bottom:3px}
+.sched-item.first .sched-day{color:#ff6b9d}
+.sched-detail{font-size:13px;color:#e0c0f8}
+
+/* Category */
+.cat-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;cursor:pointer;background:#0d0816;border:1px solid #ffffff08;margin-bottom:0;user-select:none}
+.cat-label{flex:1;font-size:13px;color:#c44dff;font-family:Georgia,serif}
+.cat-done-count{font-size:9px;color:#444}
+.cat-chevron{color:#333;font-size:14px}
+.cat-body{margin-top:2px;margin-bottom:10px}
+
+/* Priority colours */
+.p-urgent{background:#ff444415;border-color:#ff444444}
+.p-high{background:#ff6b9d15;border-color:#ff6b9d44}
+.p-med{background:#c44dff15;border-color:#c44dff33}
+.p-low{background:#ffffff06;border-color:#ffffff12}
+.dot-urgent{color:#ff4444}
+.dot-high{color:#ff6b9d}
+.dot-med{color:#c44dff}
+.dot-low{color:#555}
+
+/* Task row */
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:10px;margin-bottom:5px;border:1px solid}
+.task-check{width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:1px;cursor:pointer;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;transition:all .2s}
+.task-check.done-check{background:linear-gradient(135deg,#ff6b9d,#c44dff);border-color:transparent}
+.task-text{flex:1;font-size:12px;line-height:1.5}
+.task-text.done-text{color:#333;text-decoration:line-through}
+.task-meta{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.task-priority{font-size:8px;padding:1px 5px;border-radius:6px;text-transform:uppercase;font-weight:700}
+.task-del{font-size:8px;padding:1px 5px;border-radius:6px;background:#ff444411;color:#ff4444;border:none;cursor:pointer}
+
+/* Add task */
+.add-form{padding:10px;border-radius:10px;background:#0f0818;border:1px solid #c44dff33;margin-bottom:5px}
+.add-input{width:100%;background:#1a0d2e;border:1px solid #c44dff22;border-radius:6px;padding:6px 8px;color:#f0d0ff;font-size:12px;margin-bottom:6px}
+.priority-row{display:flex;gap:5px;margin-bottom:6px}
+.pr-btn{flex:1;padding:4px;border-radius:6px;border:1px solid;font-size:9px;text-transform:uppercase;background:transparent}
+.pr-btn.selected-urgent{background:#ff444420;border-color:#ff4444;color:#ff4444}
+.pr-btn.selected-high{background:#ff6b9d20;border-color:#ff6b9d;color:#ff6b9d}
+.pr-btn.selected-med{background:#c44dff20;border-color:#c44dff;color:#c44dff}
+.pr-btn.selected-low{background:#ffffff10;border-color:#555;color:#555}
+.pr-btn.unselected{border-color:#ffffff15;color:#333}
+.form-btns{display:flex;gap:6px}
+.btn-add{flex:1;padding:7px;border-radius:8px;background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;font-size:11px;font-weight:700}
+.btn-cancel{flex:1;padding:7px;border-radius:8px;border:1px solid #ffffff15;background:transparent;color:#555;font-size:11px}
+.btn-add-task{width:100%;padding:7px;border-radius:8px;border:1px dashed #ffffff10;background:transparent;color:#333;font-size:11px;margin-bottom:3px}
+
+/* Checkin + show done */
+.checkin-btn{width:100%;padding:11px;border-radius:12px;border:1px solid #c44dff33;background:linear-gradient(135deg,#1a0535,#0d0220);color:#c44dff;font-size:13px;font-weight:700;margin-bottom:10px}
+.confirm-row{display:flex;gap:8px}
+.btn-confirm{flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;font-size:12px;font-weight:700}
+.btn-deny{flex:1;padding:10px;border-radius:12px;border:1px solid #ffffff15;background:transparent;color:#555;font-size:12px}
+.show-done-btn{background:none;border:1px solid #ffffff10;color:#333;font-size:10px;padding:5px 16px;border-radius:10px;display:block;margin:8px auto 0}
+
+/* Done view */
+.done-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;margin-bottom:5px;background:#0a0610;border:1px solid #ffffff05;cursor:pointer}
+.done-tick{width:16px;height:16px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#ff6b9d,#c44dff);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff}
+.done-text{flex:1;font-size:12px;color:#444;text-decoration:line-through}
+
+/* Saved toast */
+.saved-toast{position:fixed;top:16px;right:16px;background:#c44dff;color:#fff;font-size:11px;padding:6px 14px;border-radius:20px;z-index:999;pointer-events:none;opacity:0;transition:opacity .3s}
+.saved-toast.show{opacity:1}
+
+.edit-btn{background:none;border:1px solid #ffffff15;color:#555;font-size:10px;padding:2px 10px;border-radius:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="saved-toast" id="savedToast">Saved ✓</div>
+
+  <div class="header">
+    <div class="eyebrow">Command Centre</div>
+    <div class="logo">BLAZEDBRAT</div>
+    <div class="badges">
+      <span class="badge badge-purple" id="doneCount">0 done</span>
+      <span class="badge badge-red" id="urgentCount">0 urgent</span>
+      <span class="badge badge-green" id="savedBadge" style="display:none">Saved</span>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 10px">
+    <div id="checkinWrap">
+      <button class="checkin-btn" onclick="showConfirm()">✦ CHECK IN — Reset Daily Checkoffs</button>
+    </div>
+    <div id="confirmWrap" style="display:none" class="confirm-row">
+      <button class="btn-confirm" onclick="doCheckin()">Confirm Reset</button>
+      <button class="btn-deny" onclick="hideConfirm()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" id="nav-all" onclick="setView('all')">All</button>
+    <button class="nav-btn" id="nav-urgent" onclick="setView('urgent')">🔴 Urgent</button>
+    <button class="nav-btn" id="nav-schedule" onclick="setView('schedule')">📅 Schedule</button>
+    <button class="nav-btn" id="nav-done" onclick="setView('done')">✅ Done</button>
+  </div>
+
+  <div class="content" id="mainContent"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const INIT_FINANCES = {
+  business: 49317.78,
+  businessSavings: 120068.76,
+  tdSavings: 2764.34,
+  tdChequing: 753.56,
+  tdCredit: 1212.79,
+  owedBoyfriend: 2604,
+  femdomAudit: 30,
+  planMilestones: [true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false],
+  savingsGoal: 10000,
+  chequingGoal: 4000,
+  businessGoal: 80000
+};
+
+const SCHEDULE = [
+  { day:"Mon Jun 23", detail:"Bella WhatsApp call 4pm EST — touring discussion. Inner Sanctum IG follow-up if no response." },
+  { day:"Jun 20-27", detail:"Full work week — goal 60 more clips uploaded before Friday. OF/Fansly/LoyalFans post schedule. No spa or tattoo this week." },
+  { day:"Thu Jun 26", detail:"Niagara — Tattoo 11am-3pm + Spa 5-10pm" },
+  { day:"Sat Jun 28", detail:"Wedding in Toronto" },
+  { day:"Tue Jul 1 BIRTHDAY OF CANADA", detail:"Canada Day — check for sales on PC parts. Hard build deadline July 7." },
+  { day:"Thu Jul 10-12", detail:"Tattoo convention — full body contest. Book tattoo sessions before this." },
+  { day:"Mon Jul 20", detail:"Vancouver — land early, session booked, Mistress Fields collab" },
+  { day:"Tue Jul 21", detail:"Vancouver — Club Stilettos collab all day. Possible: Hazel Lovett / Goddess Amelia / TS Mesha Klink" },
+  { day:"Wed Jul 22", detail:"Vancouver — cam with Sarah Moon + Mistress Fields. TikToks." },
+  { day:"Thu Jul 23", detail:"VFW — Pre-Party: Kinky Cocktails 9PM (tickets bought ✓)" },
+  { day:"Fri Jul 24", detail:"VFW — Black & White Ball, Hollywood Theatre 9PM" },
+  { day:"Sat Jul 25", detail:"VFW — Fetish Walk 2PM + Main Event 9PM. Inner Sanctum runway 11:15PM/12:30AM — UNCONFIRMED" },
+  { day:"Sun Jul 26", detail:"VFW — VIP Cruise boards 5PM SHARP + Bondage Ball" },
+  { day:"Mon Jul 27", detail:"VFW — Group Beach Trip" },
+  { day:"Thu Jul 30", detail:"Toronto — VELD hotel check in (hotel booked Jul 30-Aug 3)" },
+  { day:"Jul 31-Aug 2", detail:"VELD festival" },
+  { day:"Fri Aug 8", detail:"BIRTHDAY 🎂 — milk subs for tips and gifts all week" },
+  { day:"Sep 1-2", detail:"Toronto — Marilyn Manson" },
+  { day:"Thu Sep 3", detail:"MFW — VIP Cocktail + Fetish Feast 7PM, Icebreaker Cabaret Cleo 10PM" },
+  { day:"Fri Sep 4", detail:"MFW — Workshops/Expo 12-6PM, Latex Lust & Lace 6PM-3AM" },
+  { day:"Sep 5-7", detail:"MFW — remaining events. Hotel Chez Swann booked." },
+];
+
+const CATEGORIES = {
+  finances: { label:"💰 Finances", tasks:[
+    { id:"f8", text:"Scotia Bank — business credit card, looking into it", priority:"high" },
+    { id:"f3", text:"Check car insurance (due soon)", priority:"high" },
+    { id:"f5", text:"2025 taxes — sent to bookkeeper, awaiting response. 2026 taxes NOT sent yet — gather and send. Pay bookkeeper this month + confirm her current email (keeps changing).", priority:"high" },
+    { id:"f6", text:"Set up retirement savings fund 2026", priority:"med" },
+    { id:"f7", text:"Pay boyfriend remaining $2,604", priority:"high" },
+    { id:"f12", text:"Property management — auto payments ✓, lease extension ✓. Hot water issue ongoing.", priority:"low" },
+  ]},
+  employees: { label:"👥 Employees", tasks:[
+    { id:"e2", text:"Back invoices for previous employees (2026 taxes)", priority:"med" },
+    { id:"e4", text:"Set up monthly bookkeeper submission routine", priority:"med" },
+    { id:"e6", text:"Income tracker — built ✓. Manual update 1st of each month for anything not auto-pulled from email.", priority:"low" },
+    { id:"e7", text:"Will (Fansly vault labeling, $600 flat, Infloww access) — guide on tag system throughout", priority:"med" },
+  ]},
+  home: { label:"🏠 Home", tasks:[
+    { id:"h1", text:"Clean vacuum heads — store in new empty drawer", priority:"low" },
+    { id:"h2", text:"Empty bedroom catch-all tray (half done)", priority:"low" },
+    { id:"h6", text:"Brita filter (replace)", priority:"med" },
+    { id:"h7", text:"Buy blender", priority:"med" },
+    { id:"h39", text:"Frame eBay pictures when arrive + frame existing painting for hallway wall", priority:"med" },
+    { id:"h40", text:"Xmas/birthday — ask for Angelina Wrona paintings for another wall", priority:"low" },
+    { id:"h37", text:"Restock — B&BW Chocolate Amber body lotion (out) + OGX Coconut Coffee body cream (out)", priority:"high" },
+    { id:"h34", text:"Build a PC — Cinnamoroll aesthetic. Ryzen 9 9900X, RTX 5070 Ti, 64GB DDR5, Lian Li O11 Vision White. Watch Canada Day sales. Hard deadline July 7.", priority:"high" },
+    { id:"h38", text:"Find and buy shelf for under bathroom sink — measure space first", priority:"med" },
+    { id:"h35", text:"Put up cow print wallpaper in kitchen", priority:"low" },
+    { id:"h9", text:"Buy command strips (large) — dungeon/cam room walls", priority:"med" },
+    { id:"h11", text:"Make pickled eggs", priority:"low" },
+    { id:"h13", text:"Wash bedroom blanket (silk/cotton — cold delicate, hang dry only)", priority:"med" },
+    { id:"h16", text:"Bedroom deep clean — move ALL furniture, peppermint spray all fabrics and baseboards, diatomaceous earth along baseboards", priority:"high" },
+    { id:"h17", text:"Organise closet shelves better", priority:"low" },
+    { id:"h22", text:"Diatomaceous earth (food-grade, cat safe) — order online, sprinkle along baseboards for spiders", priority:"high" },
+    { id:"h25", text:"Purple mirror — ordered Wayfair, install myself when it arrives", priority:"med" },
+    { id:"h32", text:"Change kitchen sink faucet to pull-out head style", priority:"low" },
+    { id:"h33", text:"Fix kitchen rugs sliding — buy non-slip rug pad or grip tape", priority:"low" },
+    { id:"b6", text:"Warts — buy more freezing solution and do treatment. Still unresolved.", priority:"med" },
+  ]},
+  withBoyfriend: { label:"💑 With Boyfriend", tasks:[
+    { id:"b1", text:"Hang bedroom posters", priority:"low" },
+    { id:"b5", text:"Bank run together (Scotia Bank) — only if cash earned this week in Kitchener", priority:"low" },
+    { id:"b10", text:"Hallway picture wall — in progress. eBay pictures ordered, need framing when arrive. One painting also needs framing.", priority:"med" },
+    { id:"b12", text:"BF to hang green wavy mirror — arrived, set up, needs hanging", priority:"med" },
+    { id:"b13", text:"Georgian Bay boat trip — Island Queen Cruise, Parry Sound. Unlikely this year, consider 2027.", priority:"low" },
+    { id:"b14", text:"BF to install remaining 4 soundproofing tiles in cam room", priority:"med" },
+    { id:"b15", text:"BF to hang cheetah print shelf in bedroom", priority:"med" },
+    { id:"b17", text:"BF to cut last of ceiling tiles to fit", priority:"med" },
+    { id:"b18", text:"BF to change outlet in dungeon", priority:"med" },
+    { id:"b19", text:"BF to finish soundproofing around dungeon outlet", priority:"med" },
+    { id:"b20", text:"BF to finish soundproofing around dungeon door", priority:"med" },
+    { id:"b21", text:"BF to add shelf under bathroom sink", priority:"med" },
+    { id:"b22", text:"BF to add shelf in kitty litter closet", priority:"med" },
+    { id:"b23", text:"Oil change on car — next BF visit", priority:"med" },
+  ]},
+  dungeon: { label:"🖤 Dungeon", tasks:[
+    { id:"d1", text:"Naughty Pines — St. Andrews Cross + Spanking Bench both paid, in production. Await delivery.", priority:"med" },
+    { id:"d3", text:"Purchase humbler", priority:"med" },
+    { id:"d7", text:"Decide Aug lease — stay or move (dungeon investment depends on this)", priority:"high" },
+    { id:"d8", text:"Motor Bunny Buck — check Amazon.ca first. Code: MYMOTORBUNNY (25% off) + 40Spin-1779082835313", priority:"med" },
+    { id:"d11", text:"Paint dungeon wood slat panels black — chalk paint ordered, paint behind slats first, two thin coats", priority:"med" },
+    { id:"d12", text:"Hang black lace on dungeon wall", priority:"low" },
+    { id:"d13", text:"Hang purple lace in hallway", priority:"low" },
+    { id:"d14", text:"Finish dungeon shelves — organize and complete", priority:"med" },
+    { id:"d15", text:"Finish dungeon lights setup", priority:"med" },
+    { id:"d17", text:"Remove legs from record stand + move to dungeon corner stacked on shelves to save space", priority:"low" },
+    { id:"d18", text:"Buy small fake plant or cactus for bottom flower holder in hallway", priority:"low" },
+  ]},
+  beauty: { label:"💄 Beauty", tasks:[
+    { id:"bty1", text:"Book laser hair removal — first session", priority:"med" },
+    { id:"bty2", text:"Book Botox — next round due ~August (on hold)", priority:"med" },
+    { id:"bty3", text:"Book eyebrow microblading consultation", priority:"med" },
+    { id:"bty4", text:"Replace expired facial oil", priority:"med" },
+    { id:"bty5", text:"Splits achieved — goal by September 2026", priority:"high" },
+    { id:"bty8", text:"Clean jade roller + eye patches tin — store in fridge", priority:"low" },
+  ]},
+  events: { label:"🗓 Events", tasks:[
+    { id:"ev3", text:"Niagara Spa — book next shift. Pack: robe, slippers, laptop, charger, snacks, RedBull", priority:"med" },
+    { id:"ev10", text:"Build Kitchener client presence — get more local session clients so not fully reliant on Niagara travel", priority:"high" },
+    { id:"ev8", text:"VELD Toronto Jul 30-Aug 3 — hotel booked ✓", priority:"low" },
+    { id:"ev9", text:"Marilyn Manson Toronto Sept 1-2 — confirm tickets", priority:"med" },
+    { id:"lg1", text:"Small claims (Winnipeg) — demand letter drafted. Confirm letter, print and send.", priority:"urgent" },
+    { id:"lg2", text:"Small claims — confirm jurisdiction (ON vs MB)", priority:"high" },
+    { id:"lg3", text:"Small claims — file claim", priority:"high" },
+  ]},
+  merch: { label:"🛍 Merch", tasks:[
+    { id:"m1", text:"Design better stickers", priority:"low" },
+    { id:"m2", text:"Design custom lighters", priority:"low" },
+    { id:"m3", text:"Design posters", priority:"low" },
+    { id:"m4", text:"Find print supplier", priority:"low" },
+    { id:"m5", text:"Design magnets", priority:"low" },
+  ]},
+  claudeSetups: { label:"💻 Online Business", tasks:[
+    { id:"c1", text:"ALL Claude setups running and posting consistently before Jul 20 Vancouver — non-negotiable deadline", priority:"urgent" },
+    { id:"c47", text:"Femdom audit — 30/650 clips done. GOAL: 60 more clips before Friday Jun 27. Platforms: C4S solo, C4S studio, Clips.com solo, Clips.com studio, YourVids, IWC, LoyalFans, Scatbook.", priority:"urgent" },
+    { id:"c7", text:"Edit website — Niagara added ✓. Update full travel section. Add Kitchener.", priority:"med" },
+    { id:"c6", text:"Edit website — footjob added to session menu, update full travel section", priority:"med" },
+    { id:"c58", text:"Bella (WhatsApp) — 4pm EST Monday Jun 23. Call about touring.", priority:"urgent" },
+    { id:"c10", text:"Send Solana referral message — add C4S + Pornhub + FansRevenue links first then send", priority:"med" },
+    { id:"c26", text:"Promote active LoyalFans referrals — Mistress Kassy, Mistress Fields, Adam Hanna, Princess Yasmine. 5% lifetime each.", priority:"med" },
+    { id:"c27", text:"Mistress Fields Vancouver collab — replied ✓. Confirm final details closer to date.", priority:"med" },
+    { id:"c8", text:"Build work email list — clients, leads, platform contacts", priority:"med" },
+    { id:"c4", text:"Content calendar and planner", priority:"med" },
+    { id:"c30", text:"Dump both phones — transfer all photos and videos to laptop. In progress, sorting camera rolls.", priority:"med" },
+    { id:"c12", text:"GFE audit — Fansly, OnlyFans, YourVids, MFC, Streamate. Compare what is posted where, what is missing.", priority:"high" },
+    { id:"c13", text:"Schedule daily posts — OF, Fansly, LoyalFans, IWC, C4S (solo + studio), Clips.com (solo + studio), YourVids, Scatbook, MFCShare, Streamate", priority:"high" },
+    { id:"c57", text:"Promote near US border — Niagara: target Buffalo/Niagara Falls NY. Windsor (Sept-Nov): target Detroit area.", priority:"med" },
+    { id:"c14", text:"Set up Twitter and Bluesky automation for all 13 personas", priority:"high" },
+    { id:"c42", text:"URGENT — Label auto tweet account before losing it", priority:"urgent" },
+    { id:"c56", text:"Create clip promotion auto post Bluesky account", priority:"high" },
+    { id:"c43", text:"Update all Twitter accounts to tag @Mercyragefemdom in bios and auto tweets", priority:"high" },
+    { id:"c44", text:"C4S original store — convert to Group Domme Studio page", priority:"high" },
+    { id:"c44b", text:"C4S new solo store — set up and add performers", priority:"high" },
+    { id:"c45", text:"Catch up Clips.com solo store to Femdom audit — upload all missing femdom content", priority:"high" },
+    { id:"c45b", text:"Clips.com Group Domme Studio — approved ✓. SEO + profile photo needed", priority:"high" },
+    { id:"c45c", text:"Clips.com GFE store — approved ✓. SEO + profile photo needed", priority:"high" },
+    { id:"c54", text:"SEO both new Clips.com stores (Group Domme + GFE)", priority:"high" },
+    { id:"c55", text:"Create social media accounts for Group Femdom studio — Instagram, Twitter, Bluesky", priority:"high" },
+    { id:"c29", text:"Regain access to Twitter @nsfwblazedbrat — try forgot password, then ID verification", priority:"med" },
+    { id:"c48", text:"Submit Twitter appeals for @toilet4mercy and @Blazedbratdomme", priority:"high" },
+    { id:"c49", text:"Search old emails to track down any other suspended/lost Twitter usernames and submit appeals", priority:"med" },
+    { id:"c15", text:"Set up Reddit and RedGifs automation", priority:"med" },
+    { id:"c16", text:"Build streaming preset plan before Vancouver July collabs", priority:"high" },
+    { id:"c17", text:"YourVids — SEO done ✓. Still need to add photos to profile", priority:"med" },
+    { id:"c41", text:"Clips.com — 59 performers added ✓ (shared between stores). 13 need paper IDs scanned/tracked down", priority:"high" },
+    { id:"c46", text:"Add performers to YourVids account", priority:"med" },
+    { id:"c50", text:"Sign up to Chaturbate — set up profile and start streaming", priority:"med" },
+    { id:"c51", text:"Create social media accounts for C4S Group Domme Studio", priority:"med" },
+    { id:"c52", text:"Create social media accounts for Clips.com Group Domme Studio", priority:"med" },
+    { id:"c36", text:"Test current mics when filming — find best setup for audio quality", priority:"med" },
+    { id:"c37", text:"Upgrade filming quality to pro YouTube level — lighting, framing, audio, editing", priority:"med" },
+    { id:"c38", text:"Film a strong first video for OFTV application — clean, professional, SFW", priority:"med" },
+    { id:"c39", text:"Apply to OFTV — research requirements first, then submit application with first video", priority:"med" },
+    { id:"c40", text:"YouTube channel blazedbratx — SEO the channel, start posting, cross post from OFTV", priority:"med" },
+    { id:"c53", text:"Create Group Femdom YouTube channel — Zoom recorded podcast. Solo episodes first: mentorship explained, site breakdowns. Then collabs with Mistress Fields, Kassy etc.", priority:"med" },
+    { id:"c32", text:"Build Telegram mentorship group — tips and info for all sites, add all mentees.", priority:"med" },
+    { id:"c33", text:"Fix up Telegram promo channel", priority:"med" },
+    { id:"c34", text:"Fix up Telegram work channel", priority:"med" },
+    { id:"c11", text:"OF + Fansly — switch to PPV/tips-only messaging (still pending)", priority:"high" },
+  ]},
+  selfCare: { label:"🌸 Self Care", tasks:[
+    { id:"s2", text:"Neck and shoulder exercises daily — pinched nerve", priority:"high" },
+    { id:"s3", text:"Oral care routine — veneers and bad breath", priority:"med" },
+    { id:"s5", text:"Workout daily — splits and pole also. Keep the streak.", priority:"high" },
+    { id:"s6", text:"Splits stretching daily — September goal", priority:"high" },
+  ]},
+};
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'blazedbrat_cmd_v1';
+
+function loadUserData() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { done: {}, finances: {} };
+    return JSON.parse(raw);
+  } catch(e) { return { done: {}, finances: {} }; }
+}
+
+function saveUserData(ud) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ud)); } catch(e) {}
+  showSaved();
+}
+
+var userData = loadUserData();
+var finances = Object.assign({}, INIT_FINANCES, userData.finances || {});
+// Goals always from code
+finances.savingsGoal = INIT_FINANCES.savingsGoal;
+finances.chequingGoal = INIT_FINANCES.chequingGoal;
+finances.businessGoal = INIT_FINANCES.businessGoal;
+
+function persistAll() {
+  userData.done = userData.done || {};
+  userData.finances = {
+    business: finances.business,
+    businessSavings: finances.businessSavings,
+    tdSavings: finances.tdSavings,
+    tdChequing: finances.tdChequing,
+    tdCredit: finances.tdCredit,
+    owedBoyfriend: finances.owedBoyfriend,
+    femdomAudit: finances.femdomAudit,
+    planMilestones: finances.planMilestones
+  };
+  saveUserData(userData);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var currentView = 'all';
+var collapsed = {};
+var addingTo = null;
+var newTaskText = '';
+var newTaskPriority = 'med';
+var showDone = false;
+var editingFin = false;
+var confirmingReset = false;
+
+// Extra tasks added by user (stored in userData)
+userData.extraTasks = userData.extraTasks || {};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+var P = {
+  urgent: { cls:'p-urgent', dot:'dot-urgent', label:'URGENT' },
+  high:   { cls:'p-high',   dot:'dot-high',   label:'HIGH' },
+  med:    { cls:'p-med',    dot:'dot-med',     label:'MED' },
+  low:    { cls:'p-low',    dot:'dot-low',     label:'LOW' },
+};
+
+function allTasks() {
+  var result = [];
+  var keys = Object.keys(CATEGORIES);
+  for (var i = 0; i < keys.length; i++) {
+    var catKey = keys[i];
+    var section = CATEGORIES[catKey];
+    var tasks = section.tasks.slice();
+    var extra = userData.extraTasks[catKey] || [];
+    for (var j = 0; j < extra.length; j++) tasks.push(extra[j]);
+    for (var j = 0; j < tasks.length; j++) {
+      result.push(Object.assign({}, tasks[j], { catKey: catKey }));
+    }
+  }
+  return result;
+}
+
+function isDone(id) { return !!(userData.done && userData.done[id]); }
+
+function toggleDone(id) {
+  userData.done = userData.done || {};
+  if (userData.done[id]) { delete userData.done[id]; } else { userData.done[id] = true; }
+  persistAll();
+  render();
+}
+
+function toggleMilestone(i) {
+  var m = finances.planMilestones.slice();
+  m[i] = !m[i];
+  finances.planMilestones = m;
+  persistAll();
+  render();
+}
+
+function adjustAudit(delta) {
+  finances.femdomAudit = Math.min(650, Math.max(0, (finances.femdomAudit || 0) + delta));
+  persistAll();
+  render();
+}
+
+function updateFinance(key, val) {
+  finances[key] = parseFloat(val) || 0;
+}
+
+function saveFinances() {
+  persistAll();
+  editingFin = false;
+  render();
+}
+
+function addTask(catKey) {
+  if (!newTaskText.trim()) return;
+  var id = catKey + '_' + Date.now();
+  userData.extraTasks = userData.extraTasks || {};
+  userData.extraTasks[catKey] = userData.extraTasks[catKey] || [];
+  userData.extraTasks[catKey].push({ id: id, text: newTaskText.trim(), priority: newTaskPriority });
+  userData.done = userData.done || {};
+  saveUserData(userData);
+  newTaskText = '';
+  addingTo = null;
+  render();
+}
+
+function deleteTask(catKey, taskId) {
+  // Only delete from extraTasks (user-added)
+  if (userData.extraTasks && userData.extraTasks[catKey]) {
+    userData.extraTasks[catKey] = userData.extraTasks[catKey].filter(function(t) { return t.id !== taskId; });
+    saveUserData(userData);
+  }
+  render();
+}
+
+function showSaved() {
+  var t = document.getElementById('savedToast');
+  if (t) { t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 1500); }
+}
+
+function setView(v) {
+  currentView = v;
+  var btns = ['all','urgent','schedule','done'];
+  for (var i = 0; i < btns.length; i++) {
+    var b = document.getElementById('nav-' + btns[i]);
+    if (b) b.className = 'nav-btn' + (btns[i] === v ? ' active' : '');
+  }
+  render();
+}
+
+function showConfirm() { confirmingReset = true; render(); }
+function hideConfirm() { confirmingReset = false; render(); }
+function doCheckin() {
+  userData.done = {};
+  persistAll();
+  confirmingReset = false;
+  render();
+}
+
+function updateBadges() {
+  var tasks = allTasks();
+  var doneCount = tasks.filter(function(t) { return isDone(t.id); }).length;
+  var urgentCount = tasks.filter(function(t) { return t.priority === 'urgent' && !isDone(t.id); }).length;
+  var dc = document.getElementById('doneCount');
+  var uc = document.getElementById('urgentCount');
+  if (dc) dc.textContent = doneCount + ' done';
+  if (uc) uc.textContent = urgentCount + ' urgent';
+}
+
+function fmt(n) { return '$' + Number(n || 0).toLocaleString('en-CA', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function pct(cur, goal) { return Math.min(100, Math.round((cur / goal) * 100)); }
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  updateBadges();
+  var checkinWrap = document.getElementById('checkinWrap');
+  var confirmWrap = document.getElementById('confirmWrap');
+  if (checkinWrap) checkinWrap.style.display = confirmingReset ? 'none' : 'block';
+  if (confirmWrap) confirmWrap.style.display = confirmingReset ? 'flex' : 'none';
+
+  var el = document.getElementById('mainContent');
+  if (!el) return;
+
+  var html = '';
+
+  if (currentView === 'schedule') {
+    html += renderSchedule();
+  } else if (currentView === 'urgent') {
+    html += renderUrgent();
+  } else if (currentView === 'done') {
+    html += renderDone();
+  } else {
+    html += renderAll();
+  }
+
+  el.innerHTML = html;
+  attachEvents();
+}
+
+function renderSchedule() {
+  var html = '';
+  for (var i = 0; i < SCHEDULE.length; i++) {
+    var s = SCHEDULE[i];
+    html += '<div class="sched-item' + (i===0?' first':'') + '">';
+    html += '<div class="sched-day">' + esc(s.day) + '</div>';
+    html += '<div class="sched-detail">' + esc(s.detail) + '</div>';
+    html += '</div>';
+  }
+  return html;
+}
+
+function renderUrgent() {
+  var tasks = allTasks().filter(function(t) { return t.priority === 'urgent' && !isDone(t.id); });
+  var html = '<div style="font-size:10px;color:#ff4444;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">' + tasks.length + ' items need attention</div>';
+  if (!tasks.length) return html + '<div style="text-align:center;color:#333;padding:40px 0;font-size:12px">✨ Nothing urgent</div>';
+  for (var i = 0; i < tasks.length; i++) {
+    html += renderTask(tasks[i]);
+  }
+  return html;
+}
+
+function renderDone() {
+  var tasks = allTasks().filter(function(t) { return isDone(t.id); });
+  var html = '<div style="font-size:10px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">' + tasks.length + ' completed</div>';
+  if (!tasks.length) return html + '<div style="text-align:center;color:#333;padding:40px 0;font-size:12px">Nothing done yet</div>';
+  for (var i = 0; i < tasks.length; i++) {
+    var t = tasks[i];
+    html += '<div class="done-row" onclick="toggleDone(\'' + t.id + '\')">';
+    html += '<div class="done-tick">✓</div>';
+    html += '<div class="done-text">' + esc(t.text) + '</div>';
+    html += '</div>';
+  }
+  return html;
+}
+
+function renderAll() {
+  var html = renderFinances();
+  html += renderProgress();
+
+  var catKeys = Object.keys(CATEGORIES);
+  for (var i = 0; i < catKeys.length; i++) {
+    var catKey = catKeys[i];
+    var section = CATEGORIES[catKey];
+    var baseTasks = section.tasks.slice();
+    var extra = userData.extraTasks[catKey] || [];
+    var allCatTasks = baseTasks.concat(extra);
+    var doneCount = allCatTasks.filter(function(t) { return isDone(t.id); }).length;
+    var visibleTasks = showDone ? allCatTasks : allCatTasks.filter(function(t) { return !isDone(t.id); });
+    var isCollapsed = collapsed[catKey];
+
+    html += '<div style="margin-bottom:10px">';
+    html += '<div class="cat-header" onclick="toggleCat(\'' + catKey + '\')">';
+    html += '<span class="cat-label">' + esc(section.label) + '</span>';
+    if (doneCount > 0) html += '<span class="cat-done-count">' + doneCount + ' done</span>';
+    html += '<span class="cat-chevron">' + (isCollapsed ? '›' : '⌄') + '</span>';
+    html += '</div>';
+
+    if (!isCollapsed) {
+      html += '<div class="cat-body">';
+      for (var j = 0; j < visibleTasks.length; j++) {
+        html += renderTask(visibleTasks[j], catKey);
+      }
+
+      if (addingTo === catKey) {
+        html += '<div class="add-form">';
+        html += '<input class="add-input" id="newTaskInput" type="text" placeholder="New task..." value="' + esc(newTaskText) + '" oninput="newTaskText=this.value" />';
+        html += '<div class="priority-row">';
+        var prs = ['urgent','high','med','low'];
+        for (var p = 0; p < prs.length; p++) {
+          var pr = prs[p];
+          var sel = newTaskPriority === pr ? ('selected-' + pr) : 'unselected';
+          html += '<button class="pr-btn ' + sel + '" onclick="newTaskPriority=\'' + pr + '\';render()">' + pr + '</button>';
+        }
+        html += '</div>';
+        html += '<div class="form-btns">';
+        html += '<button class="btn-add" onclick="addTask(\'' + catKey + '\')">Add</button>';
+        html += '<button class="btn-cancel" onclick="addingTo=null;render()">Cancel</button>';
+        html += '</div></div>';
+      } else {
+        html += '<button class="btn-add-task" onclick="addingTo=\'' + catKey + '\';render()">+ Add task</button>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div style="text-align:center;margin-top:8px">';
+  html += '<button class="show-done-btn" onclick="showDone=!showDone;render()">' + (showDone ? 'Hide' : 'Show') + ' completed</button>';
+  html += '</div>';
+  return html;
+}
+
+function renderTask(t, catKey) {
+  var p = P[t.priority] || P.low;
+  var done = isDone(t.id);
+  var canDelete = catKey && userData.extraTasks && userData.extraTasks[catKey] && userData.extraTasks[catKey].some(function(e) { return e.id === t.id; });
+  var html = '<div class="task-row ' + p.cls + '">';
+  html += '<div class="task-check' + (done?' done-check':'') + '" onclick="toggleDone(\'' + t.id + '\')">' + (done?'✓':'') + '</div>';
+  html += '<span class="task-text' + (done?' done-text':'') + '">' + esc(t.text) + '</span>';
+  html += '<div class="task-meta">';
+  html += '<span class="task-priority ' + p.dot + '" style="background:' + getBg(t.priority) + '">' + p.label + '</span>';
+  if (canDelete) html += '<button class="task-del" onclick="deleteTask(\'' + catKey + '\',\'' + t.id + '\')">✕</button>';
+  html += '</div></div>';
+  return html;
+}
+
+function getBg(priority) {
+  if (priority === 'urgent') return '#ff444415';
+  if (priority === 'high') return '#ff6b9d15';
+  if (priority === 'med') return '#c44dff15';
+  return '#ffffff08';
+}
+
+function renderFinances() {
+  var html = '<div class="card">';
+  html += '<div class="card-title"><span>💰 Financial Snapshot</span><button class="edit-btn" onclick="editingFin=!editingFin;render()">' + (editingFin?'Done':'Edit') + '</button></div>';
+
+  if (editingFin) {
+    html += '<div class="fin-edit-grid">';
+    var fields = [
+      ['Scotia Chequing','business'],
+      ['Scotia Savings','businessSavings'],
+      ['TD Savings','tdSavings'],
+      ['TD Chequing','tdChequing'],
+      ['TD Credit Card','tdCredit'],
+      ['Owed to BF','owedBoyfriend']
+    ];
+    for (var i = 0; i < fields.length; i++) {
+      var label = fields[i][0], key = fields[i][1];
+      html += '<div class="fin-edit-item"><label>' + label + '</label>';
+      html += '<input type="number" value="' + (finances[key]||0) + '" onchange="updateFinance(\'' + key + '\',this.value)" /></div>';
+    }
+    html += '</div>';
+    html += '<button onclick="saveFinances()" style="width:100%;padding:8px;border-radius:8px;background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;font-size:12px;margin-top:8px;border:none;cursor:pointer">Save Finances</button>';
+  } else {
+    html += '<div class="fin-grid">';
+    var cells = [
+      ['Scotia Chequing', fmt(finances.business), false],
+      ['Scotia Savings', fmt(finances.businessSavings), false],
+      ['Owed to BF', fmt(finances.owedBoyfriend), true],
+      ['TD Credit', '-' + fmt(finances.tdCredit), true],
+    ];
+    for (var i = 0; i < cells.length; i++) {
+      var cell = cells[i];
+      html += '<div class="fin-cell' + (cell[2]?' debt':'') + '">';
+      html += '<div class="fin-label">' + cell[0] + '</div>';
+      html += '<div class="fin-val' + (cell[2]?' debt':'') + '">' + cell[1] + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    var bars = [
+      ['TD Savings — Goal $10k', finances.tdSavings, finances.savingsGoal],
+      ['TD Chequing — Goal $4k', finances.tdChequing, finances.chequingGoal],
+      ['Scotia Chequing — Goal $80k', finances.business, finances.businessGoal],
+    ];
+    for (var i = 0; i < bars.length; i++) {
+      var b = bars[i];
+      var p2 = pct(b[1], b[2]);
+      html += '<div class="prog-wrap">';
+      html += '<div class="prog-header"><span>' + b[0] + '</span><span class="prog-pct">' + p2 + '%</span></div>';
+      html += '<div class="prog-track"><div class="prog-fill" style="width:' + p2 + '%"></div></div>';
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderProgress() {
+  var html = '<div class="card">';
+  html += '<div class="card-title">⚡ 9-Week Plan</div>';
+  var m = finances.planMilestones || [];
+  var doneM = m.filter(function(x) { return x; }).length;
+  var progPct = pct(doneM, 18);
+  html += '<div class="prog-wrap" style="margin-bottom:8px">';
+  html += '<div class="prog-header"><span>' + doneM + '/18 milestones</span><span class="prog-pct">' + progPct + '%</span></div>';
+  html += '<div class="prog-track"><div class="prog-fill" style="width:' + progPct + '%"></div></div>';
+  html += '</div>';
+  html += '<div class="milestone-grid">';
+  for (var i = 0; i < 18; i++) {
+    var done = m[i] || false;
+    html += '<div class="milestone-dot' + (done?' done':'') + '" onclick="toggleMilestone(' + i + ')">' + (done?'✓':'') + '</div>';
+  }
+  html += '</div>';
+
+  var auditPct = pct(finances.femdomAudit || 0, 650);
+  html += '<div style="margin-top:12px">';
+  html += '<div class="prog-header"><span>Femdom Audit</span><span class="prog-pct">' + (finances.femdomAudit||0) + '/650</span></div>';
+  html += '<div class="prog-track" style="margin-bottom:8px"><div class="prog-fill" style="width:' + auditPct + '%"></div></div>';
+  html += '<div class="audit-row">';
+  html += '<span class="audit-count">' + (finances.femdomAudit||0) + ' <span style="font-size:12px;color:#555">/ 650 clips</span></span>';
+  html += '<div class="audit-btns">';
+  html += '<button class="audit-btn minus" onclick="adjustAudit(-1)">−</button>';
+  html += '<button class="audit-btn plus" onclick="adjustAudit(1)">+</button>';
+  html += '</div></div></div>';
+  html += '</div>';
+  return html;
+}
+
+function attachEvents() {
+  var inp = document.getElementById('newTaskInput');
+  if (inp) { inp.focus(); inp.value = newTaskText; }
+}
+
+function toggleCat(key) { collapsed[key] = !collapsed[key]; render(); }
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
