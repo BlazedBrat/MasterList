@@ -166,7 +166,8 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none}
   <div class="nav">
     <button class="nav-btn active" id="nav-all" onclick="setView('all')">All</button>
     <button class="nav-btn" id="nav-urgent" onclick="setView('urgent')">🔴 Urgent</button>
-    <button class="nav-btn" id="nav-schedule" onclick="setView('schedule')">📅 Schedule</button>
+    <button class="nav-btn" id="nav-week" onclick="setView('week')">📆 This Week</button>
+    <button class="nav-btn" id="nav-schedule" onclick="setView('schedule')">🗓 Upcoming</button>
     <button class="nav-btn" id="nav-done" onclick="setView('done')">✅ Done</button>
   </div>
 
@@ -174,6 +175,17 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none}
 </div>
 
 <script>
+// ── WEEKLY CALENDAR ────────────────────────────────────────────────────────────
+var WEEK_EVENTS = {
+  "Mon Jun 23": ["Bella WhatsApp call 4pm EST — touring", "Inner Sanctum IG follow-up if no response"],
+  "Tue Jun 24": ["OF Livestream 9pm — already posted + mass messaged. Post reminder AM + afternoon.", "Merge expired subs lists into one during stream"],
+  "Wed Jun 25": ["Upload clips for audit", "Schedule OF/Fansly/LoyalFans posts"],
+  "Thu Jun 26": ["Upload clips for audit"],
+  "Fri Jun 27": ["Goal: 60 clips uploaded this week (30→90 total)", "Upload clips for audit"],
+  "Sat Jun 28": ["Toronto wedding"],
+  "Sun Jun 29": ["Rest / catch up"],
+};
+
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
 const INIT_FINANCES = {
@@ -182,7 +194,7 @@ const INIT_FINANCES = {
   tdSavings: 2764.34,
   tdChequing: 753.56,
   tdCredit: 1212.79,
-  owedBoyfriend: 2604,
+  owedBoyfriend: 2254,
   femdomAudit: 30,
   planMilestones: [true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false],
   savingsGoal: 10000,
@@ -220,7 +232,7 @@ const CATEGORIES = {
     { id:"f3", text:"Check car insurance (due soon)", priority:"high" },
     { id:"f5", text:"2025 taxes — sent to bookkeeper, awaiting response. 2026 taxes NOT sent yet — gather and send. Pay bookkeeper this month + confirm her current email (keeps changing).", priority:"high" },
     { id:"f6", text:"Set up retirement savings fund 2026", priority:"med" },
-    { id:"f7", text:"Pay boyfriend remaining $2,604", priority:"high" },
+    { id:"f7", text:"Pay boyfriend remaining $2,254", priority:"high" },
     { id:"f12", text:"Property management — auto payments ✓, lease extension ✓. Hot water issue ongoing.", priority:"low" },
   ]},
   employees: { label:"👥 Employees", tasks:[
@@ -236,7 +248,6 @@ const CATEGORIES = {
     { id:"h7", text:"Buy blender", priority:"med" },
     { id:"h39", text:"Frame eBay pictures when arrive + frame existing painting for hallway wall", priority:"med" },
     { id:"h40", text:"Xmas/birthday — ask for Angelina Wrona paintings for another wall", priority:"low" },
-    { id:"h37", text:"Restock — B&BW Chocolate Amber body lotion (out) + OGX Coconut Coffee body cream (out)", priority:"high" },
     { id:"h34", text:"Build a PC — Cinnamoroll aesthetic. Ryzen 9 9900X, RTX 5070 Ti, 64GB DDR5, Lian Li O11 Vision White. Watch Canada Day sales. Hard deadline July 7.", priority:"high" },
     { id:"h38", text:"Find and buy shelf for under bathroom sink — measure space first", priority:"med" },
     { id:"h35", text:"Put up cow print wallpaper in kitchen", priority:"low" },
@@ -250,6 +261,11 @@ const CATEGORIES = {
     { id:"h32", text:"Change kitchen sink faucet to pull-out head style", priority:"low" },
     { id:"h33", text:"Fix kitchen rugs sliding — buy non-slip rug pad or grip tape", priority:"low" },
     { id:"b6", text:"Warts — buy more freezing solution and do treatment. Still unresolved.", priority:"med" },
+    { id:"d11", text:"Paint dungeon wood slat panels black — chalk paint ordered, paint behind slats first, two thin coats", priority:"med" },
+    { id:"d12", text:"Hang black lace on dungeon wall", priority:"low" },
+    { id:"d13", text:"Hang purple lace in hallway", priority:"low" },
+    { id:"d14", text:"Finish dungeon shelves — organize and complete", priority:"med" },
+    { id:"d15", text:"Finish dungeon lights setup", priority:"med" },
   ]},
   withBoyfriend: { label:"💑 With Boyfriend", tasks:[
     { id:"b1", text:"Hang bedroom posters", priority:"low" },
@@ -272,11 +288,6 @@ const CATEGORIES = {
     { id:"d3", text:"Purchase humbler", priority:"med" },
     { id:"d7", text:"Decide Aug lease — stay or move (dungeon investment depends on this)", priority:"high" },
     { id:"d8", text:"Motor Bunny Buck — check Amazon.ca first. Code: MYMOTORBUNNY (25% off) + 40Spin-1779082835313", priority:"med" },
-    { id:"d11", text:"Paint dungeon wood slat panels black — chalk paint ordered, paint behind slats first, two thin coats", priority:"med" },
-    { id:"d12", text:"Hang black lace on dungeon wall", priority:"low" },
-    { id:"d13", text:"Hang purple lace in hallway", priority:"low" },
-    { id:"d14", text:"Finish dungeon shelves — organize and complete", priority:"med" },
-    { id:"d15", text:"Finish dungeon lights setup", priority:"med" },
     { id:"d17", text:"Remove legs from record stand + move to dungeon corner stacked on shelves to save space", priority:"low" },
     { id:"d18", text:"Buy small fake plant or cactus for bottom flower holder in hallway", priority:"low" },
   ]},
@@ -287,6 +298,10 @@ const CATEGORIES = {
     { id:"bty4", text:"Replace expired facial oil", priority:"med" },
     { id:"bty5", text:"Splits achieved — goal by September 2026", priority:"high" },
     { id:"bty8", text:"Clean jade roller + eye patches tin — store in fridge", priority:"low" },
+    { id:"bty9", text:"Restock — B&BW Chocolate Amber body lotion (out) + OGX Coconut Coffee body cream (out)", priority:"high" },
+    { id:"bty10", text:"Restock — Tatcha SPF 50 sunscreen (buy more)", priority:"high" },
+    { id:"bty11", text:"Restock — Hyalu B5 serum", priority:"high" },
+    { id:"bty12", text:"Restock — liquid eyeliner", priority:"high" },
   ]},
   events: { label:"🗓 Events", tasks:[
     { id:"ev3", text:"Niagara Spa — book next shift. Pack: robe, slippers, laptop, charger, snacks, RedBull", priority:"med" },
@@ -310,6 +325,8 @@ const CATEGORIES = {
     { id:"c7", text:"Edit website — Niagara added ✓. Update full travel section. Add Kitchener.", priority:"med" },
     { id:"c6", text:"Edit website — footjob added to session menu, update full travel section", priority:"med" },
     { id:"c58", text:"Bella (WhatsApp) — 4pm EST Monday Jun 23. Call about touring.", priority:"urgent" },
+    { id:"c59", text:"Vancouver performer IDs — need VALID updated copies BEFORE Jul 20 from: Spencer, Breno, Bambi, Johnny Banana, Kassy, Fatigued Kink. Current IDs expired. Message each to resend.", priority:"urgent" },
+    { id:"c60", text:"Fansly co-performers — updated feature, inputting performers. Not done yet.", priority:"high" },
     { id:"c10", text:"Send Solana referral message — add C4S + Pornhub + FansRevenue links first then send", priority:"med" },
     { id:"c26", text:"Promote active LoyalFans referrals — Mistress Kassy, Mistress Fields, Adam Hanna, Princess Yasmine. 5% lifetime each.", priority:"med" },
     { id:"c27", text:"Mistress Fields Vancouver collab — replied ✓. Confirm final details closer to date.", priority:"med" },
@@ -497,7 +514,7 @@ function showSaved() {
 
 function setView(v) {
   currentView = v;
-  var btns = ['all','urgent','schedule','done'];
+  var btns = ['all','urgent','week','schedule','done'];
   for (var i = 0; i < btns.length; i++) {
     var b = document.getElementById('nav-' + btns[i]);
     if (b) b.className = 'nav-btn' + (btns[i] === v ? ' active' : '');
@@ -540,7 +557,9 @@ function render() {
 
   var html = '';
 
-  if (currentView === 'schedule') {
+  if (currentView === 'week') {
+    html += renderWeek();
+  } else if (currentView === 'schedule') {
     html += renderSchedule();
   } else if (currentView === 'urgent') {
     html += renderUrgent();
@@ -753,6 +772,25 @@ function renderProgress() {
   html += '</div></div></div>';
   html += '</div>';
   return html;
+}
+
+function renderWeek() {
+  var days = Object.keys(WEEK_EVENTS);
+  var today = new Date();
+  var todayStr = today.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+  var html2 = '<div style="font-size:9px;color:#c44dff66;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">Week of Jun 23</div>';
+  for (var i = 0; i < days.length; i++) {
+    var day = days[i];
+    var events = WEEK_EVENTS[day];
+    var isToday = todayStr.replace(',','') === day.replace(',','');
+    html2 += '<div style="margin-bottom:10px;padding:12px 14px;border-radius:12px;background:' + (isToday ? 'linear-gradient(135deg,#1a0535,#0d0220)' : '#0a0610') + ';border:1px solid ' + (isToday ? '#ff6b9d44' : '#ffffff08') + '">';
+    html2 += '<div style="font-size:11px;color:' + (isToday ? '#ff6b9d' : '#c44dff') + ';margin-bottom:6px;font-family:Georgia,serif">' + esc(day) + (isToday ? ' — TODAY' : '') + '</div>';
+    for (var j = 0; j < events.length; j++) {
+      html2 += '<div style="font-size:12px;color:#e0c0f8;padding:4px 0;border-top:1px solid #ffffff08;line-height:1.4">' + esc(events[j]) + '</div>';
+    }
+    html2 += '</div>';
+  }
+  return html2;
 }
 
 function attachEvents() {
