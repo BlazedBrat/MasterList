@@ -209,7 +209,8 @@ const INIT_FINANCES = {
   planMilestones: [true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false],
   savingsGoal: 10000,
   chequingGoal: 4000,
-  businessGoal: 80000
+  businessGoal: 0,
+  businessSavingsGoal: 180000
 };
 
 const SCHEDULE = [
@@ -826,7 +827,8 @@ function renderFinances() {
     var bars = [
       ['TD Savings — Goal $10k', finances.tdSavings, finances.savingsGoal],
       ['TD Chequing — Goal $4k', finances.tdChequing, finances.chequingGoal],
-      ['Scotia Chequing — Goal $80k', finances.business, finances.businessGoal],
+      ['Scotia Savings — Goal $180k (apt building May 2027)', finances.businessSavings, finances.businessSavingsGoal],
+      ['Scotia Chequing — operating account', finances.business, 0],
     ];
     for (var i = 0; i < bars.length; i++) {
       var b = bars[i];
